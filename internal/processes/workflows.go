@@ -7,7 +7,7 @@ import (
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 
-	"github.com/go-microfrontend/images-s3/internal/storage"
+	"github.com/go-microfrontend/images-storage/internal/storage"
 )
 
 var imageActivityOptions = workflow.ActivityOptions{
@@ -20,21 +20,21 @@ var imageActivityOptions = workflow.ActivityOptions{
 	},
 }
 
-var Workflows = []any{GetImageWF, PutImageWF}
+var Workflows = []any{GetImage, PutImage}
 
-func GetImageWF(ctx workflow.Context, arg storage.GetFileParams) ([]byte, error) {
+func GetImage(ctx workflow.Context, arg storage.GetFileParams) (string, error) {
 	ctx = workflow.WithActivityOptions(ctx, imageActivityOptions)
 
-	var imageBytes []byte
-	err := workflow.ExecuteActivity(ctx, "GetImage", arg).Get(ctx, &imageBytes)
+	var url string
+	err := workflow.ExecuteActivity(ctx, "GetImage", arg).Get(ctx, &url)
 	if err != nil {
-		return nil, errors.Wrap(err, "executing GetImage activity")
+		return "", errors.Wrap(err, "executing GetImage activity")
 	}
 
-	return imageBytes, nil
+	return url, nil
 }
 
-func PutImageWF(ctx workflow.Context, arg storage.PutFileParams) error {
+func PutImage(ctx workflow.Context, arg storage.PutFileParams) error {
 	ctx = workflow.WithActivityOptions(ctx, imageActivityOptions)
 
 	err := workflow.ExecuteActivity(ctx, "PutImage", arg).Get(ctx, nil)

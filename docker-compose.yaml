@@ -38,5 +38,6 @@ volumes:
 networks:
   is-network:
     driver: bridge
+    name: is-network
   temporal-network:
     external: true

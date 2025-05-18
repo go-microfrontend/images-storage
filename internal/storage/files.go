@@ -3,7 +3,10 @@ package storage
 import (
 	"bytes"
 	"context"
-	"io"
+	"fmt"
+	"log/slog"
+	"net/url"
+	"time"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/pkg/errors"
@@ -14,13 +17,21 @@ type GetFileParams struct {
 	ObjectName string
 }
 
-func (s *Storage) GetFile(ctx context.Context, arg GetFileParams) (io.ReadCloser, error) {
-	obj, err := s.client.GetObject(ctx, arg.BucketName, arg.ObjectName, minio.GetObjectOptions{})
+func (s *Storage) GetFile(ctx context.Context, arg GetFileParams) (*url.URL, error) {
+	url, err := s.client.PresignedGetObject(ctx, arg.BucketName, arg.ObjectName, time.Hour, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "getting object")
+		return nil, errors.Wrap(err, "getting object url")
 	}
 
-	return obj, nil
+	slog.Debug(
+		"get_file_url",
+		slog.String(
+			fmt.Sprintf("%s-%s", arg.BucketName, arg.ObjectName),
+			url.String(),
+		),
+	)
+
+	return url, nil
 }
 
 type PutFileParams struct {

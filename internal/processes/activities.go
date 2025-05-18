@@ -2,15 +2,15 @@ package processes
 
 import (
 	"context"
-	"io"
+	"net/url"
 
 	"github.com/pkg/errors"
 
-	"github.com/go-microfrontend/images-s3/internal/storage"
+	"github.com/go-microfrontend/images-storage/internal/storage"
 )
 
 type Storage interface {
-	GetFile(ctx context.Context, arg storage.GetFileParams) (io.ReadCloser, error)
+	GetFile(ctx context.Context, arg storage.GetFileParams) (*url.URL, error)
 	PutFile(ctx context.Context, arg storage.PutFileParams) error
 }
 
@@ -22,19 +22,13 @@ func New(storage Storage) *Activities {
 	return &Activities{storage: storage}
 }
 
-func (a *Activities) GetImage(ctx context.Context, arg storage.GetFileParams) ([]byte, error) {
-	r, err := a.storage.GetFile(ctx, arg)
+func (a *Activities) GetImage(ctx context.Context, arg storage.GetFileParams) (string, error) {
+	url, err := a.storage.GetFile(ctx, arg)
 	if err != nil {
-		return nil, errors.Wrap(err, "getting file")
-	}
-	defer r.Close()
-
-	b, err := io.ReadAll(r)
-	if err != nil {
-		return nil, errors.Wrap(err, "reading file")
+		return "", errors.Wrap(err, "getting file url")
 	}
 
-	return b, nil
+	return url.String(), nil
 }
 
 func (a *Activities) PutImage(ctx context.Context, arg storage.PutFileParams) error {

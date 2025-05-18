@@ -1,4 +1,4 @@
-module github.com/go-microfrontend/images-s3
+module github.com/go-microfrontend/images-storage
 
 go 1.24.1
 

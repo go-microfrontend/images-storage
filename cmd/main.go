@@ -10,15 +10,16 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 
-	"github.com/go-microfrontend/images-s3/internal/processes"
-	"github.com/go-microfrontend/images-s3/internal/storage"
+	"github.com/go-microfrontend/images-storage/internal/processes"
+	"github.com/go-microfrontend/images-storage/internal/storage"
 )
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
+	slog.SetLogLoggerLevel(slog.LevelDebug)
 
-	client, err := client.Dial(client.Options{HostPort: os.Getenv("TEMPORAL_ADDR")})
+	client, err := client.Dial(client.Options{HostPort: os.Getenv("TEMPORAL_ADDR"), Logger: logger})
 	if err != nil {
 		slog.Error("failed to connect to temporal", slog.String("error", err.Error()))
 		os.Exit(1)
